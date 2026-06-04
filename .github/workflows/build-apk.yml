@@ -22,30 +22,9 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Generate Gradle Wrapper
-      run: |
-        TARGET_DIR="."
-        if [ -d "android-project" ]; then
-          TARGET_DIR="android-project"
-        fi
-        if [ ! -f "$TARGET_DIR/gradlew" ]; then
-          echo "No Gradle wrapper found, downloading official Gradle 8.2 wrapper..."
-          mkdir -p "$TARGET_DIR/gradle/wrapper"
-          curl -sSLo "$TARGET_DIR/gradlew" https://raw.githubusercontent.com/gradle/gradle/v8.2.0/gradlew
-          curl -sSLo "$TARGET_DIR/gradlew.bat" https://raw.githubusercontent.com/gradle/gradle/v8.2.0/gradlew.bat
-          curl -sSLo "$TARGET_DIR/gradle/wrapper/gradle-wrapper.jar" https://raw.githubusercontent.com/gradle/gradle/v8.2.0/gradle/wrapper/gradle-wrapper.jar
-          cat <<EOF > "$TARGET_DIR/gradle/wrapper/gradle-wrapper.properties"
-distributionBase=GRADLE_USER_HOME
-distributionPath=wrapper/dists
-distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-bin.zip
-networkTimeout=10000
-zipStoreBase=GRADLE_USER_HOME
-zipStorePath=wrapper/dists
-EOF
-        fi
-
     - name: Grant Execute Permission to Gradlew
       run: |
+        # If the Android project is within a subdirectory, navigate into it
         if [ -d "android-project" ]; then
           cd android-project
         fi
@@ -61,8 +40,7 @@ EOF
         if [ -f "gradlew" ]; then
           ./gradlew assembleDebug
         else
-          echo "Using system gradle..."
-          gradle assembleDebug
+          echo "No Gradle wrapper found. Please export from web code explorer to a standard template repository."
         fi
 
     - name: Upload Compiled APK to GitHub Releases
