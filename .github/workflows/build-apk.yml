@@ -2,50 +2,37 @@ name: Build RICHA Android APK
 
 on:
   push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
-  workflow_dispatch: # Allows manual trigger from the GitHub Actions tab
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Compile Android Source Code
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-    - name: Set up JDK 17
+    - name: set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
+        cache: gradle
 
-    - name: Grant Execute Permission to Gradlew
+    - name: Grant execute permission for gradlew
       run: |
-        # If the Android project is within a subdirectory, navigate into it
-        if [ -d "android-project" ]; then
-          cd android-project
-        fi
-        if [ -f "gradlew" ]; then
-          chmod +x gradlew
-        fi
+        cd android-project
+        chmod +x gradlew
+      continue-on-error: true
 
-    - name: Build Debug APK with Gradle
+    - name: Build with Gradle
       run: |
-        if [ -d "android-project" ]; then
-          cd android-project
-        fi
-        if [ -f "gradlew" ]; then
-          ./gradlew assembleDebug
-        else
-          echo "No Gradle wrapper found. Please export from web code explorer to a standard template repository."
-        fi
+        cd android-project
+        ./gradlew assembleDebug || gradlew assembleDebug || gradle assembleDebug
 
-    - name: Upload Compiled APK to GitHub Releases
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: RICHA-AI-Companion-Debug-APK
-        path: '**/build/outputs/apk/debug/*.apk'
-        if-no-files-found: warn
+        path: android-project/app/build/outputs/apk/debug/*.apk
+        
